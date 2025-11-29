@@ -74,10 +74,47 @@ docker-compose exec app php artisan key:generate
 docker-compose exec app php artisan migrate
 ```
 
-7. ブラウザでアクセス
+7. storageディレクトリのパーミッション設定（初回のみ）
+
+```bash
+docker-compose exec app chmod -R 777 storage bootstrap/cache
+```
+
+8. ブラウザでアクセス
 
 ```
 http://localhost:8080
+```
+
+### Windows環境での注意事項
+
+Windows + WSL + Docker環境で開発する場合、以下の点に注意してください：
+
+**ブラウザアクセス時の問題**
+
+`localhost:8080` でアクセスできない場合は、以下を試してください：
+
+1. **IPv4アドレスを明示的に使用**
+   ```
+   http://127.0.0.1:8080
+   ```
+
+2. **WSLのIPアドレスを確認してアクセス**
+   ```bash
+   wsl hostname -I
+   ```
+   表示されたIPアドレス + `:8080` でアクセス
+
+3. **Docker Desktopの設定確認**
+   - 設定 → General → "Use WSL 2 based engine" が有効
+   - 設定 → Resources → WSL Integration で適切なディストリビューションが選択されている
+
+**パーミッションエラーが発生する場合**
+
+WSL環境では、storageディレクトリのパーミッション問題が発生することがあります。以下のコマンドで修正してください：
+
+```bash
+docker-compose exec app chmod -R 777 storage bootstrap/cache
 ```
 
 ## 開発ルール
