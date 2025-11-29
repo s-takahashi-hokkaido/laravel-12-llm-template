@@ -1,218 +1,262 @@
-# Laravel 12 LLM Template
+# Laravel Application
 
-Laravel 12 + Docker環境で構築されたLLMアプリケーション開発用テンプレートプロジェクトです。
+このディレクトリには、Laravel 12アプリケーションのソースコードが含まれています。
 
-## 概要
+## アプリケーション概要
 
-このプロジェクトは、Laravel 12を使用したWebアプリケーション開発のためのテンプレートです。Docker環境で動作し、開発環境の統一と素早いセットアップを実現します。
-
-## 技術スタック
-
-- **フレームワーク**: Laravel 12
-- **PHP**: 8.3
-- **Webサーバー**: Nginx 1.20
+- **Laravel バージョン**: 12.x
+- **PHP バージョン**: 8.3
+- **言語**: 日本語（ja）
+- **タイムゾーン**: Asia/Tokyo
 - **データベース**: MySQL 8.0
-- **コンテナ**: Docker / Docker Compose
-- **フロントエンド**: Blade + Alpine.js
-
-## プロジェクト構成
-
-```
-.
-├── infra/              # Docker関連設定
-│   ├── mysql/         # MySQL設定
-│   ├── nginx/         # Nginx設定
-│   └── php/           # PHP設定
-├── src/               # Laravelアプリケーション
-└── docker-compose.yml # Docker Compose設定
-```
-
-## 環境構築
-
-### 前提条件
-
-- Docker Desktop がインストールされていること
-- Docker Compose が利用可能であること
-
-### セットアップ手順
-
-1. リポジトリをクローン
-
-```bash
-git clone <repository-url>
-cd laravel-12-llm-template
-```
-
-2. Docker環境を起動
-
-```bash
-docker-compose up -d
-```
-
-3. 依存パッケージをインストール（初回のみ）
-
-```bash
-docker-compose exec app composer install
-```
-
-4. 環境変数ファイルを設定
-
-```bash
-cd src
-cp .env.example .env
-```
-
-5. アプリケーションキーを生成
-
-```bash
-docker-compose exec app php artisan key:generate
-```
-
-6. データベースマイグレーション実行
-
-```bash
-docker-compose exec app php artisan migrate
-```
-
-7. storageディレクトリのパーミッション設定（初回のみ）
-
-```bash
-docker-compose exec app chmod -R 777 storage bootstrap/cache
-```
-
-8. ブラウザでアクセス
-
-```
-http://localhost:8080
-```
-
-### Windows環境での注意事項
-
-Windows + WSL + Docker環境で開発する場合、以下の点に注意してください：
-
-**ブラウザアクセス時の問題**
-
-`localhost:8080` でアクセスできない場合は、以下を試してください：
-
-1. **IPv4アドレスを明示的に使用**
-   ```
-   http://127.0.0.1:8080
-   ```
-
-2. **WSLのIPアドレスを確認してアクセス**
-   ```bash
-   wsl hostname -I
-   ```
-   表示されたIPアドレス + `:8080` でアクセス
-
-3. **Docker Desktopの設定確認**
-   - 設定 → General → "Use WSL 2 based engine" が有効
-   - 設定 → Resources → WSL Integration で適切なディストリビューションが選択されている
-
-**パーミッションエラーが発生する場合**
-
-WSL環境では、storageディレクトリのパーミッション問題が発生することがあります。以下のコマンドで修正してください：
-
-```bash
-docker-compose exec app chmod -R 777 storage bootstrap/cache
-```
-
-## 開発ルール
-
-開発時は [CLAUDE.md](CLAUDE.md) に記載されているルールに従ってください。
-
-主な開発方針：
-
-- コントローラーは薄く保ち、ビジネスロジックはサービス層に委譲
-- データアクセスはサービスから直接Eloquentを使用
-- バリデーションはFormRequestクラスで管理
-- フロントエンドはBlade + Alpine.jsで構築
 
 ## ディレクトリ構成
 
 ```
-src/
-├── app/
-│   ├── Console/       # Artisanコマンド
+app/
+├── Console/           # Artisanコマンド
+│   ├── Commands/     # カスタムコマンド
+│   └── Kernel.php    # スケジューラー設定
+├── Http/
+│   ├── Controllers/  # コントローラー（薄く保つ）
+│   ├── Requests/     # FormRequest（バリデーション）
+│   └── Middleware/   # ミドルウェア
+├── Models/           # Eloquent Model
+├── Services/         # ビジネスロジック層
+├── Exceptions/       # カスタム例外
+└── DTOs/            # Data Transfer Objects
+
+resources/
+├── views/           # Bladeテンプレート
+│   └── layouts/    # レイアウトファイル
+└── js/             # JavaScriptファイル
+
+database/
+├── migrations/      # マイグレーション
+└── seeders/        # シーダー
+
+config/             # 設定ファイル
+routes/             # ルート定義
+tests/              # テスト
+```
+
+## アーキテクチャ
+
+### 基本方針
+
+このプロジェクトは、以下のアーキテクチャパターンを採用しています：
+
+```
+Controller (薄い)
+    ↓ FormRequest でバリデーション
+Service (ビジネスロジック)
+    ↓
+Model + Scope (データアクセス)
+    ↓
+Database
+```
+
+### 各層の責務
+
+- **Controller**: HTTPリクエストの受付とレスポンス返却のみ（薄く保つ）
+- **FormRequest**: バリデーションルール定義
+- **Service**: ビジネスロジック、トランザクション制御
+- **Model**: データベーステーブルとの対応、リレーション定義、Scopeメソッド
+- **Repository**: 不採用（サービスから直接Eloquentを使用）
+
+## 開発ルール
+
+詳細な開発ルールは [CLAUDE.md](CLAUDE.md) を参照してください。
+
+### コーディング規約
+
+- すべてのpublicメソッドにPHPDocを記述
+- 複雑なビジネスロジックには日本語コメントを記述
+- N+1問題を防ぐため、リレーションは必ず `with()` で事前ロード
+- 検索結果は必ずページネーション（`paginate()`）を使用
+
+### 命名規則
+
+- **Service**: `{Domain}Service` (例: `UserService`, `OrderService`)
+- **FormRequest**: `{Domain}{Action}Request` (例: `UserStoreRequest`)
+- **Command**: `{Action}Command` (例: `SendNotificationCommand`)
+- **Model Scope**: `scope{Condition}` (例: `scopeActive`, `scopeRecent`)
+
+## フロントエンド
+
+- **テンプレートエンジン**: Blade
+- **JavaScriptフレームワーク**: Alpine.js
+- **理由**: 軽量でBladeと相性が良く、学習コストが低い
+
+## テスト
+
+### テストディレクトリ構成
+
+```
+tests/
+├── Feature/         # 機能テスト
 │   ├── Http/
-│   │   ├── Controllers/  # コントローラー（薄く保つ）
-│   │   └── Requests/     # FormRequest（バリデーション）
-│   ├── Models/        # Eloquent Model
-│   ├── Services/      # ビジネスロジック層
-│   ├── Exceptions/    # カスタム例外
-│   └── DTOs/          # Data Transfer Objects
-├── resources/
-│   ├── views/         # Bladeテンプレート
-│   └── js/            # JavaScriptファイル
-└── database/
-    ├── migrations/    # マイグレーション
-    └── seeders/       # シーダー
+│   │   └── Controllers/
+│   └── Console/
+│       └── Commands/
+└── Unit/           # ユニットテスト
+    ├── Services/
+    └── Requests/
 ```
 
-## よく使うコマンド
+### 実装推奨テスト
 
-### Docker操作
+- サービス層のユニットテスト
+- FormRequestのバリデーションテスト
+- 重要なコマンドの統合テスト
+- コントローラーの機能テスト
+
+### テスト実行
 
 ```bash
-# コンテナ起動
-docker-compose up -d
+# すべてのテスト実行
+php artisan test
 
-# コンテナ停止
-docker-compose down
+# 特定のテスト実行
+php artisan test --filter UserServiceTest
 
-# ログ確認
-docker-compose logs -f app
+# カバレッジ付きで実行
+php artisan test --coverage
 ```
 
-### Laravel操作
+## データベース
+
+### マイグレーション
 
 ```bash
-# Artisanコマンド実行
-docker-compose exec app php artisan <command>
-
 # マイグレーション実行
-docker-compose exec app php artisan migrate
+php artisan migrate
+
+# ロールバック
+php artisan migrate:rollback
+
+# リフレッシュ
+php artisan migrate:refresh
+
+# マイグレーション作成
+php artisan make:migration create_users_table
+```
+
+### シーダー
+
+```bash
+# シーダー実行
+php artisan db:seed
+
+# 特定のシーダー実行
+php artisan db:seed --class=UserSeeder
+
+# シーダー作成
+php artisan make:seeder UserSeeder
+```
+
+## よく使うArtisanコマンド
+
+```bash
+# コントローラー作成
+php artisan make:controller UserController
+
+# モデル作成（マイグレーション付き）
+php artisan make:model User -m
+
+# FormRequest作成
+php artisan make:request UserStoreRequest
+
+# サービス作成（手動）
+# app/Services/{Domain}Service.php を作成
+
+# コマンド作成
+php artisan make:command SendNotificationCommand
 
 # キャッシュクリア
-docker-compose exec app php artisan cache:clear
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
 
-# テスト実行
-docker-compose exec app php artisan test
+# 設定キャッシュ
+php artisan config:cache
+php artisan route:cache
 ```
 
-### Composer操作
+## 環境変数
 
-```bash
-# パッケージインストール
-docker-compose exec app composer install
+主要な環境変数（`.env`ファイル）：
 
-# パッケージ追加
-docker-compose exec app composer require <package-name>
+```env
+APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_TIMEZONE=Asia/Tokyo
+
+APP_LOCALE=ja
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=ja_JP
+
+DB_CONNECTION=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=phper
+DB_PASSWORD=secret
 ```
 
-## データベース接続
+## パフォーマンス対策
 
-開発環境では以下の設定でデータベースに接続できます：
+- **Eager Loading**: N+1問題を防ぐため、リレーションは必ず `with()` で事前ロード
+- **インデックス**: 検索条件として使われるカラムにはインデックスを設定
+- **ページネーション**: 検索結果は必ず `paginate()` を使用
+- **キャッシュ**: 頻繁にアクセスされる静的データはキャッシュを活用
 
-- ホスト: `localhost`
-- ポート: `3306`
-- データベース名: `.env`ファイルで設定
-- ユーザー名: `.env`ファイルで設定
-- パスワード: `.env`ファイルで設定
+## エラーハンドリング
 
-## Git運用ルール
+### 標準例外の使用
 
-- 機能追加・修正時はfeatureブランチを作成
-- develop/mainへの直接pushは禁止
-- PRを作成してコードレビューを実施
-- マイグレーション含む変更は慎重に扱う
+- `ValidationException`: バリデーションエラー
+- `ModelNotFoundException`: モデルが見つからない
+- `QueryException`: データベースエラー
 
-詳細は [CLAUDE.md](CLAUDE.md) の「Git操作ルール」を参照してください。
+### カスタム例外
 
-## ライセンス
+特定のドメインロジックで専用例外が必要な場合のみ追加：
 
-このテンプレートプロジェクトはMITライセンスの下で公開されています。
+```php
+// app/Exceptions/PaymentException.php
+namespace App\Exceptions;
 
----
+class PaymentException extends \Exception
+{
+    // ...
+}
+```
 
-**Note**: このプロジェクトはLaravel 12フレームワークをベースにしています。Laravelの詳細は[公式ドキュメント](https://laravel.com/docs)を参照してください。
+## 定期実行タスク
+
+Laravelスケジューラーを使用：
+
+```php
+// app/Console/Kernel.php
+protected function schedule(Schedule $schedule)
+{
+    $schedule->command('send:notifications')
+             ->dailyAt('09:00');
+}
+```
+
+システムのcronで以下を登録：
+
+```
+* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+## 関連ドキュメント
+
+- [開発ルールとコーディング規約](CLAUDE.md)
+- [プロジェクト全体のREADME](../README.md)
+- [Laravel公式ドキュメント](https://laravel.com/docs)
