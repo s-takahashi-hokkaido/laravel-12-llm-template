@@ -1,0 +1,57 @@
+*.log
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
+Thumbs.db
+
+# Docker related
+/.dockerignore
+
+# IDE - Additional
+*.swp
+*.swo
+*~
+
+# Testing
+/coverage
+/.phpunit.cache
+
+# Composer auth (機密情報)
+/auth.json
+
+# SQLite Database (開発用DB)
+*.sqlite
+*.sqlite-journal
+
+# npm/yarn error logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Compiled assets (本番ビルド済みファイル)
+/public/mix-manifest.json
+
+# Laravel Telescope (開発ツール、本番では不要)
+/storage/telescope
+
+# Laravel Debugbar
+/storage/debugbar

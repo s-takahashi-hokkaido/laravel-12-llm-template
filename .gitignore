@@ -1,0 +1,29 @@
+# src配下はsrc/.gitignoreで管理
+# ここではプロジェクトルートレベルのDocker関連ファイルを管理
+
+# Docker volumes data
+db-store/
+
+# Environment variables (機密情報を含む可能性があるため)
+.env
+*.env.local
+*.env.*.local
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Docker related (一時ファイル)
+.docker/
+docker-compose.override.yml
