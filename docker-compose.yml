@@ -1,6 +1,7 @@
 services:
   app:
     build: ./infra/php
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       - ./src:/data
 
